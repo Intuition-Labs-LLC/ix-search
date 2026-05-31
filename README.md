@@ -5,7 +5,8 @@
 ### `ast-grep` × `grep` × meaning. Three searches, glued at one spot, with a confidence score.
 
 ```bash
-pip install ix-search
+# pip install ix-search — coming to PyPI; this works today:
+pip install git+https://github.com/Intuition-Labs-LLC/ix-search
 ix "the part that retries on failure"
 ```
 
