@@ -1,39 +1,32 @@
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 
-# ix — search that agrees with itself
+# ix-search
 
-Ask your code in **meaning**. `ix` glues three readings — **structure** (ast-grep) ⊗ **text** (ripgrep) ⊗ **semantics** (matryoshka embeddings) — at one location, and hands back an **R**: how sure, *because they agreed*.
-
-```bash
-pip install ix-search          # the command is `ix`
-ix "the part that retries on failure" .
-```
-
-```
-ix · model2vec:potion-base-8M · structure ⊗ text ⊗ meaning glued by R
-
-  R 1.00  src/net.py:42    def retry_with_backoff(...)     [text·stru·sema]
-  R 0.51  src/http.py:88   except ConnectionError: ...     [text·sema]
-  R 0.26  src/util.py:12   # exponential backoff helper    [sema]
-```
-
-Every hit carries **R = exp(−d_tail / scale)** — the soft Čech gluing obstruction from *The Matryoshka Sheaf*. **R = 1** when all three readings land on the same place; lower when only some agree. The tag shows which readings glued. It's **confidence, not a black-box cosine.**
-
-## Why it's different
-
-- **Three readings glue.** Lexical, structural, and semantic search are three *sections* over one location. `ix` glues them and scores the agreement. A semantic-only hit (R low) is flagged honestly; a hit where structure *and* text *and* meaning land (R = 1) is the one you want.
-- **Matryoshka = speed.** The embeddings are nested (a prefix is itself a smaller embedding), so `ix` does a fast coarse pass on a truncated vector, then unfolds to full dim only on the survivors. `--dim` tunes the coarse pass.
-- **Local, no API key.** Default embeddings are [model2vec](https://github.com/MinishLab/model2vec) static vectors — CPU, ~30 MB, no GPU, nothing leaves the machine.
-
-## Use it
+### `ast-grep` × `grep` × meaning. Three searches, glued at one spot, with a confidence score.
 
 ```bash
-ix "where do we validate the auth token" src/
-ix "rate limiting" . --top 20
-ix "off-by-one in the pagination" . --json     # machine-readable, for an agent
+pip install ix-search
+ix "the part that retries on failure"
 ```
 
-For an agent, the `--json` output gives `(path, line, R, agreed)` per hit — so it can **act on confidence** (take R ≈ 1, escalate R < 1) instead of guessing on a single cosine.
+![ix — three readings glue into one R-scored result](assets/ix-demo.gif)
+
+That's the whole thing. You already know **`ast-grep`** (structure) and **`grep`** (text). `ix` runs both — **plus** a meaning search — glues the three at the same place, and gives every hit an **`R`**: how sure it is, *because they agreed.*
+
+```
+ix · structure ⊗ text ⊗ meaning, glued by R
+
+  R 1.00  net.py:42    def retry_with_backoff(...)    [ast-grep·grep·meaning]   ← all three agree
+  R 0.51  http.py:88   except ConnectionError: ...    [grep·meaning]            ← two agree
+  R 0.26  util.py:12   # exponential backoff helper   [meaning]                 ← a stretch, flagged
+```
+
+**`R = 1`** when ast-grep, grep, *and* meaning land on the same line. Lower when only some do. It's confidence from agreement — not a black-box cosine.
+
+## Zero effort
+
+- **No API key, no GPU, nothing leaves your machine.** Meaning runs on [model2vec](https://github.com/MinishLab/model2vec) static embeddings (~30 MB, CPU).
+- **For an agent:** `ix "..." --json` → `{path, line, R, agreed}` per hit, so it acts on confidence (take `R ≈ 1`, escalate `R < 1`) instead of guessing.
 
 ```python
 from ix_search import search
@@ -41,14 +34,19 @@ for h in search("retry on failure", "."):
     print(h.R, h.path, h.line, h.agreed)
 ```
 
-## The theory
+## Why it's more than grep
 
-`ix` is the runnable instance of **The Matryoshka Sheaf** — a sheaf where local readings glue into one global result exactly when they agree, with `R = exp(−d_tail/scale)` as the gluing obstruction.
+- **Three readings glue.** Lexical, structural, and semantic search are three views of one location; `ix` overlays them and scores the agreement. The hit where all three land is the one you want — and the semantic-only stretch is flagged, not hidden.
+- **Matryoshka = speed.** The embeddings are nested (a prefix is a smaller embedding), so `ix` does a fast coarse pass on a truncated vector, then unfolds to full dim only on the survivors. (`--dim` tunes it.)
 
-- Paper + runnable code: https://huggingface.co/datasets/intuitionlabs/matryoshka-sheaf
-- ELI5: https://intuitionlabs.tech/codebox/phi/35-the-matryoshka-sheaf
+## The idea behind it
 
-Requires [`ast-grep`](https://ast-grep.github.io) and [`ripgrep`](https://github.com/BurntSushi/ripgrep) on `PATH` for the structure + text readings (semantic-only still works without them).
+`ix` is the runnable instance of **The Matryoshka Sheaf** — local readings glue into one global result exactly when they agree, with `R = exp(−d_tail/scale)` as the gluing obstruction.
+
+- 📄 Paper + code: <https://huggingface.co/datasets/intuitionlabs/matryoshka-sheaf>
+- 🧩 ELI5: <https://intuitionlabs.tech/codebox/phi/35-the-matryoshka-sheaf>
+
+Needs [`ast-grep`](https://ast-grep.github.io) and [`ripgrep`](https://github.com/BurntSushi/ripgrep) on `PATH` (the meaning search works without them).
 
 ---
 
