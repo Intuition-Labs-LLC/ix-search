@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ix-search"
+version = "0.1.0"
+description = "Search that agrees with itself: structure ⊗ text ⊗ meaning, glued at one location by coherence-R, with matryoshka embeddings for speed."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "AGPL-3.0-or-later"
+authors = [{ name = "Tej Desai", email = "29216465+wheattoast11@users.noreply.github.com" }]
+keywords = ["code-search", "semantic-search", "embeddings", "matryoshka", "ast-grep", "ripgrep", "sheaf"]
+dependencies = ["numpy>=1.23"]
+
+[project.optional-dependencies]
+embed = ["model2vec>=0.3"]
+dev = ["pytest>=7"]
+
+[project.scripts]
+ix = "ix_search.cli:main"
+
+[project.urls]
+Homepage = "https://intuitionlabs.tech/codebox/phi/35-the-matryoshka-sheaf"
+Paper = "https://huggingface.co/datasets/intuitionlabs/matryoshka-sheaf"
+Source = "https://github.com/Intuition-Labs-LLC/ix-search"
+
+[tool.setuptools.packages.find]
+where = ["src"]
