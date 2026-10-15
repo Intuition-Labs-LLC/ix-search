@@ -3,7 +3,7 @@
 """Tests: the gluing law (R), the matryoshka truncation, and an end-to-end search."""
 import math
 
-from ix_search import MatryoshkaEmbedder, glue, search
+from ix_search import MatryoshkaEmbedder, glue, isoform, search
 
 
 def test_glue_R_is_one_when_all_three_agree():
@@ -55,3 +55,28 @@ def test_end_to_end_finds_the_relevant_function(tmp_path):
     top = hits[0]
     assert top.path.endswith("net.py"), f"expected net.py on top, got {top.path}"
     assert top.R >= hits[-1].R  # sorted by R desc
+
+
+def test_ix_iso_emits_a_hashable_receipt(tmp_path):
+    (tmp_path / "net.py").write_text(
+        "def retry_with_backoff(fn, attempts=3):\n"
+        "    for i in range(attempts):\n"
+        "        try:\n"
+        "            return fn()\n"
+        "        except ConnectionError:\n"
+        "            pass\n"
+    )
+    doc = isoform("retry request failure", str(tmp_path), top=5)
+    assert doc["schema"] == "ix.isoform.v0"
+    assert doc["receipt"]["sha256"]
+    assert doc["law"]["R_kind"] == "ix_sheaf_location_R"
+    assert doc["summary"]["hits"] == len(doc["hits"])
+    assert set(doc["summary"]["reading_counts"]) == {"text", "structure", "semantic"}
+    assert doc["claim_boundary"], "receipt must carry honest claim boundaries"
+
+
+def test_ix_iso_hash_is_stable_for_same_fixture(tmp_path):
+    (tmp_path / "a.py").write_text("def alpha():\n    return 'alpha retry'\n")
+    one = isoform("alpha retry", str(tmp_path), top=3)
+    two = isoform("alpha retry", str(tmp_path), top=3)
+    assert one["receipt"]["sha256"] == two["receipt"]["sha256"]

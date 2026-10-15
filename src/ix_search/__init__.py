@@ -7,8 +7,18 @@ Three readings of a codebase — structure (ast-grep) ⊗ text (ripgrep) ⊗ sem
 instance of *The Matryoshka Sheaf*.
 """
 from .embed import MatryoshkaEmbedder
+from .iso import format_isoform, isoform
 from .search import search
 from .sheaf import MODALITIES, Hit, glue
 
-__version__ = "0.1.0"
-__all__ = ["search", "MatryoshkaEmbedder", "glue", "Hit", "MODALITIES", "__version__"]
+__version__ = "0.1.1"
+__all__ = [
+    "search",
+    "isoform",
+    "format_isoform",
+    "MatryoshkaEmbedder",
+    "glue",
+    "Hit",
+    "MODALITIES",
+    "__version__",
+]

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ix-search"
-version = "0.1.0"
+version = "0.1.1"
 description = "Search that agrees with itself: structure ⊗ text ⊗ meaning, glued at one location by coherence-R, with matryoshka embeddings for speed."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -19,6 +19,7 @@ dev = ["pytest>=7"]
 
 [project.scripts]
 ix = "ix_search.cli:main"
+ix-iso = "ix_search.iso:main"
 
 [project.urls]
 Homepage = "https://intuitionlabs.tech/codebox/phi/35-the-matryoshka-sheaf"

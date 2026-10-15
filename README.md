@@ -35,6 +35,27 @@ for h in search("retry on failure", "."):
     print(h.R, h.path, h.line, h.agreed)
 ```
 
+## `ix-iso`: the receipt form
+
+`ix` is the human command. `ix-iso` is the same search as a stable artifact other
+agents can carry around.
+
+```bash
+ix-iso "retry on failure" . --json
+```
+
+It emits an `ix.isoform.v0` manifest:
+
+- the three readings: `text`, `structure`, `semantic`
+- the gluing law: `R = exp(-d_tail / scale)`
+- every hit's missing readings, so the residual is explicit
+- a deterministic SHA-256 receipt over the manifest
+- claim boundaries, including that this is `ix_sheaf_location_R`, not the live OS
+  coherence bus and not hidden model state
+
+Use `ix-iso` when another stack needs to ingest search as a typed local organism
+artifact instead of scraping terminal text.
+
 ## Why it's more than grep
 
 - **Three readings glue.** Lexical, structural, and semantic search are three views of one location; `ix` overlays them and scores the agreement. The hit where all three land is the one you want — and the semantic-only stretch is flagged, not hidden.
